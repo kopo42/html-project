@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css" />
+  <title>게임 만들기</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+
+<body>
+
+  <div id="bground">
+    <div id="gameover" class="hidden">GAME OVER</div>
+    <button id="btn"></button>
+    <div id="jumpNum" class="hidden">성공 × <span>0</span></div>
+    <div id="container">
+      <img id="user" src="asset/cockroach-with-pauses.gif" alt="">
+      <img id="enemy" src="asset/brown_dentistpicttablet_1484335149-1.png" alt="">
+    </div>
+  </div>
+
+  <script>
+    //start
+    let stopflag = false;
+    const gameoverBtn = document.getElementById('gameover');
+    const startBtn = document.getElementById('btn');
+    const enemy = document.getElementById('enemy');
+    const jumpNum = document.querySelector("#jumpNum");
+    const jumpNumCnt = document.querySelector("#jumpNum span");
+
+    $("#btn").keydown(function (event) {
+      switch (event.code) {
+        case "Space":
+          stopflag = false;
+          enemy.classList.add("move");
+          gameoverBtn.classList.add("hidden");
+          startBtn.classList.add("hidden");
+          jumpNum.classList.remove("hidden");
+          jumpNumCnt.textContent = 0;
+          break;
+      }
+    });
+
+    // 주인공 점프
+    let isJumping = false;
+    function jump() {
+      let user = $("#user");
+      let enemy = $("#enemy");
+      isJumping = true;
+      user.animate({
+        bottom: "+=150px"
+      }).animate({
+        bottom: "-=150px"
+      }, function () {
+        isJumping = false;
+      })
+    };
+
+    //게임 시작
+    startBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!stopflag) {
+        stopflag = true;
+        jumpNumCnt.textContent++;
+        $("body").keydown(function (event) {
+          switch (event.code) {
+            case "Space":
+              // 스페이스 연타 방지
+              if (isJumping == false) {
+                jump();
+              }
+              break;
+          }
+        });
+      } else if (stopflag) {
+        return;
+      }
+    });
+
+    function deadCheck() {
+      let isDead = false;
+
+      let user = $("#user");
+      let enemy = $("#enemy");
+
+      let userTop = parseInt(user.css("top").replace("px", ""));
+      let enemyTop = parseInt(enemy.css("top").replace("px", ""));
+
+      let userRightX =
+        parseInt(user.css("left").replace("px", "")) +
+        parseInt(user.css("width").replace("px", ""));
+
+      let enemyLeftX = parseInt(enemy.css("left").replace("px", ""));
+
+
+      if ((300 - userTop) < 50) {
+        if (enemyLeftX < 0) {
+          isDead = false;
+
+        } else if (enemyLeftX < (userRightX - 80) && enemyLeftX > 50) {
+          isDead = true;
+
+        }
+
+      }
+      return isDead;
+    }
+
+    // 대략 30frame 화면 갱신
+    setInterval(function () {
+
+      // 죽었는지 체크
+      if (deadCheck()) {
+        var user = document.querySelector('#user');
+        var enemy = document.querySelector('#enemy');
+        $("#container").append('<div><img id = "gameover" src="./asset/gameover.png" alt=""></div>');
+        stopflag = true;
+        user.disabled = true;
+        enemy.disabled = true;
+      }
+    }, 33);
+  </script>
+</body>
+
+</html>
